@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, StyleSheet, Alert } from 'react-native';
-import { db, auth, EmailAuthProvider } from "../database/firebase";
+import { View, TextInput, TouchableOpacity, Text, StyleSheet, Alert } from 'react-native';
+import { auth, EmailAuthProvider } from "../database/firebase";
 
 const ChangePasswordScreen = ({ navigation }) => {
     const [currentPassword, setCurrentPassword] = useState('');
@@ -18,7 +18,6 @@ const ChangePasswordScreen = ({ navigation }) => {
             return false;
         }
     };    
-    
 
     const handleSavePassword = async () => {
         if (newPassword !== confirmPassword) {
@@ -40,7 +39,14 @@ const ChangePasswordScreen = ({ navigation }) => {
 
     return (
         <View style={styles.container}>
-            
+            <Text style={styles.header}>Cambiar Contraseña</Text>
+            <TextInput
+                placeholder="Contraseña actual"
+                secureTextEntry
+                value={currentPassword}
+                onChangeText={setCurrentPassword}
+                style={styles.input}
+            />
             <TextInput
                 placeholder="Nueva contraseña"
                 secureTextEntry
@@ -55,14 +61,9 @@ const ChangePasswordScreen = ({ navigation }) => {
                 onChangeText={setConfirmPassword}
                 style={styles.input}
             />
-            <TextInput
-                placeholder="Contraseña actual"
-                secureTextEntry
-                value={currentPassword}
-                onChangeText={setCurrentPassword}
-                style={styles.input}
-            />
-            <Button title="Guardar nueva contraseña" onPress={handleSavePassword} />
+            <TouchableOpacity style={styles.button} onPress={handleSavePassword}>
+                <Text style={styles.buttonText}>Guardar nueva contraseña</Text>
+            </TouchableOpacity>
         </View>
     );
 };
@@ -70,18 +71,38 @@ const ChangePasswordScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
         padding: 20,
+        justifyContent: 'center',
+        backgroundColor: '#f0f4f8',
+    },
+    header: {
+        fontSize: 24,
+        marginBottom: 20,
+        fontWeight: 'bold',
+        color: '#5d7eeb',
+        alignSelf: 'center',
     },
     input: {
-        width: '85%',
-        marginBottom: 10,
-        paddingHorizontal: 10,
-        height: 40,
-        borderColor: 'gray',
-        borderWidth: 1
-    }
+        height: 50,
+        marginBottom: 20,
+        borderWidth: 1,
+        borderColor: '#ccc',
+        padding: 15,
+        borderRadius: 10,
+        backgroundColor: '#fff',
+        width: '100%',
+    },
+    button: {
+        backgroundColor: '#5d7eeb',
+        padding: 15,
+        borderRadius: 10,
+        alignItems: 'center',
+    },
+    buttonText: {
+        color: '#fff',
+        fontSize: 18,
+        fontWeight: '500',
+    },
 });
 
 export default ChangePasswordScreen;

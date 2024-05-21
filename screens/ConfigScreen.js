@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { db } from "../database/firebase";
+import { Ionicons } from '@expo/vector-icons';
 
 const ConfigScreen = ({ route, navigation }) => {
     const userId = route.params.userId;
@@ -9,7 +11,7 @@ const ConfigScreen = ({ route, navigation }) => {
         name: '',
         curp: '',
         email: '',
-        password: '' 
+        password: ''
     });
 
     useEffect(() => {
@@ -37,7 +39,12 @@ const ConfigScreen = ({ route, navigation }) => {
     };
 
     return (
-        <View style={styles.container}>
+        <LinearGradient
+            colors={['#8fbced', '#5d7eeb']}  // Un azul más claro en el inicio que se fusiona con el azul de los botones
+            style={styles.container}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0, y: 1 }}
+        >
             <TextInput
                 placeholder="Nombre"
                 value={userDetails.name}
@@ -50,30 +57,17 @@ const ConfigScreen = ({ route, navigation }) => {
                 onChangeText={(value) => handleChangeText('curp', value)}
                 style={styles.input}
             />
-            <View style={styles.inputWithButton}>
-                <TextInput
-                    value={userDetails.email}
-                    editable={false}
-                    style={[styles.input, styles.disabledInput]}
-                />
-                <Button
-                    title="Cambiar"
-                    onPress={() => navigation.navigate('ChangeEmailScreen')}
-                />
-            </View>
-            <View style={styles.inputWithButton}>
-                <TextInput
-                    value="********"
-                    editable={false}
-                    style={[styles.input, styles.disabledInput]}
-                />
-                <Button
-                    title="Cambiar"
-                    onPress={() => navigation.navigate('ChangePasswordScreen')}
-                />
-            </View>
-            <Button title="Guardar Cambios" onPress={handleSave} />
-        </View>
+            <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('ChangeEmailScreen')}>
+                <Text style={styles.buttonText}>Cambiar Email</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('ChangePasswordScreen')}>
+                <Text style={styles.buttonText}>Cambiar Contraseña</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+                <Ionicons name="save-outline" size={20} color="white" style={{ marginRight: 10 }} />
+                <Text style={styles.buttonText}>Guardar Cambios</Text>
+            </TouchableOpacity>
+        </LinearGradient>
     );
 };
 
@@ -89,16 +83,35 @@ const styles = StyleSheet.create({
         marginBottom: 10,
         paddingHorizontal: 10,
         height: 40,
-        borderColor: 'gray',
-        borderWidth: 1
+        borderColor: '#5d7eeb',
+        borderWidth: 1,
+        borderRadius: 20,
+        paddingVertical: 8,
+        paddingHorizontal: 15,
+        fontSize: 16,
+        backgroundColor: 'white'  // Fondo blanco para los inputs para mejor contraste
     },
-    disabledInput: {
-        backgroundColor: '#f0f0f0',
-        color: '#a1a1a1'
-    },
-    inputWithButton: {
-        flexDirection: 'row',
+    button: {
+        width: '85%',
+        height: 50,
+        justifyContent: 'center',
         alignItems: 'center',
+        borderRadius: 25,
+        marginBottom: 10,
+        backgroundColor: '#486CE1'  // Color sólido para los botones
+    },
+    buttonText: {
+        color: 'white',
+        fontSize: 16
+    },
+    saveButton: {
+        flexDirection: 'row',
+        width: '85%',
+        height: 50,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 25,
+        backgroundColor: '#486CE1',
         marginBottom: 10
     }
 });
