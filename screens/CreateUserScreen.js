@@ -23,21 +23,36 @@ const CreateUserScreen = ({ navigation }) => {
             try {
                 const userCredential = await auth.createUserWithEmailAndPassword(state.email, state.password);
                 const user = userCredential.user;
-
-                await db.collection('users').doc(user.uid).set({
+    
+                // Documento principal en la colección 'users'
+                await db.collection('users').doc(state.curp).set({
                     name: state.name,
                     email: state.email,
+                    curp: state.curp,
+                    id: state.curp, // CURP como ID del documento
+                    createdAt: new Date(), // Fecha y hora de creación
+                    plan: "plan1", // Plan por defecto
+                    role: "user" // Rol por defecto
+                });
+    
+                // Documento secundario para mantener la integridad del CURP
+                const curpDoc = await db.collection('users').add({
                     curp: state.curp
                 });
-
+    
+                // Actualizar el documento del usuario con el ID del documento CURP
+                await db.collection('users').doc(state.curp).update({
+                    id: curpDoc.id
+                });
+    
                 alert('Usuario registrado correctamente.');
-                navigation.navigate('LoginScreen');  // Regresar al login
+                navigation.navigate('LoginScreen'); // Regresar al login
             } catch (error) {
                 console.error("Error al registrar el usuario:", error);
                 alert('Error al registrar usuario: ' + error.message);
             }
         }
-    };
+    };    
 
     return (
         <ScrollView style={styles.container}>
