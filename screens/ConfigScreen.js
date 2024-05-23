@@ -5,20 +5,30 @@ import { db } from "../database/firebase";
 import { Ionicons } from '@expo/vector-icons';
 
 const ConfigScreen = ({ route, navigation }) => {
-    const userId = route.params.userId;
+    const { userId } = route.params;
 
     const [userDetails, setUserDetails] = useState({
         name: '',
-        curp: '',
-        email: '',
-        password: ''
+        curp: ''
     });
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchData = async () => {
-            const doc = await db.collection('users').doc(userId).get();
-            if (doc.exists) {
-                setUserDetails(doc.data());
+            try {
+                const doc = await db.collection('users').doc(userId).get();
+                if (doc.exists) {
+                    setUserDetails({
+                        name: doc.data().name || '',
+                        curp: doc.data().curp || ''
+                    });
+                } else {
+                    console.error("No such document!");
+                }
+            } catch (error) {
+                console.error("Error fetching user data: ", error);
+            } finally {
+                setLoading(false);
             }
         };
         fetchData();
@@ -29,18 +39,36 @@ const ConfigScreen = ({ route, navigation }) => {
     };
 
     const handleSave = async () => {
-        const userRef = db.collection('users').doc(userId);
-        await userRef.update({
-            name: userDetails.name,
-            curp: userDetails.curp
-        });
-        alert('Datos actualizados correctamente');
-        navigation.goBack();
+        try {
+            const userRef = db.collection('users').doc(userId);
+            const doc = await userRef.get();
+            if (doc.exists) {
+                await userRef.update({
+                    name: userDetails.name,
+                    curp: userDetails.curp
+                });
+                alert('Datos actualizados correctamente');
+                navigation.goBack();
+            } else {
+                alert('No se encontró el documento del usuario para actualizar.');
+            }
+        } catch (error) {
+            console.error("Error updating user data: ", error);
+            alert('Error al actualizar los datos.');
+        }
     };
+
+    if (loading) {
+        return (
+            <View style={styles.container}>
+                <Text>Loading...</Text>
+            </View>
+        );
+    }
 
     return (
         <LinearGradient
-            colors={['#8fbced', '#5d7eeb']}  // Un azul más claro en el inicio que se fusiona con el azul de los botones
+            colors={['#8fbced', '#5d7eeb']}
             style={styles.container}
             start={{ x: 0, y: 0 }}
             end={{ x: 0, y: 1 }}
@@ -89,7 +117,7 @@ const styles = StyleSheet.create({
         paddingVertical: 8,
         paddingHorizontal: 15,
         fontSize: 16,
-        backgroundColor: 'white'  // Fondo blanco para los inputs para mejor contraste
+        backgroundColor: 'white'
     },
     button: {
         width: '85%',
@@ -98,7 +126,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         borderRadius: 25,
         marginBottom: 10,
-        backgroundColor: '#486CE1'  // Color sólido para los botones
+        backgroundColor: '#486CE1'
     },
     buttonText: {
         color: 'white',

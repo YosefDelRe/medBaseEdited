@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { View, Text, TextInput, ScrollView, StyleSheet, TouchableOpacity, Image } from "react-native";
 import { LinearGradient } from 'expo-linear-gradient';
 import { Feather } from '@expo/vector-icons';
-import { auth } from "../database/firebase";
+import { db, auth } from "../database/firebase";
+import { useFocusEffect } from '@react-navigation/native';
 
 const LoginScreen = ({ navigation }) => {
     const [state, setState] = useState({
@@ -21,14 +22,26 @@ const LoginScreen = ({ navigation }) => {
             try {
                 const userCredential = await auth.signInWithEmailAndPassword(state.email, state.password);
                 const user = userCredential.user;
-                console.log("Usuario autenticado:", auth.currentUser);
-                alert('Usuario autenticado');
-                navigation.navigate('UserDetailsScreen', { userId: user.uid });
+    
+                const userDoc = await db.collection('users').where('id', '==', user.uid).get();
+                if (!userDoc.empty) {
+                    const userData = userDoc.docs[0].data();
+                    alert('Usuario autenticado');
+                    navigation.navigate('UserDetailsScreen', { userId: userData.curp, uid: user.uid });
+                } else {
+                    alert('No se encontró el documento del usuario.');
+                }
             } catch (error) {
-                alert('Error al iniciar sesión: ' + error.message);
+                alert('Información Incorrecta');
             }
         }
     };
+
+    useFocusEffect(
+        React.useCallback(() => {
+            setState({ email: '', password: '' });
+        }, [])
+    );
 
     return (
         <ScrollView style={styles.container}>
@@ -50,6 +63,7 @@ const LoginScreen = ({ navigation }) => {
                         placeholderTextColor="white"
                         onChangeText={(value) => handleChangeText('email', value)}
                         style={styles.input}
+                        value={state.email}
                     />
                 </View>
                 <View style={styles.inputGroup}>
@@ -60,6 +74,7 @@ const LoginScreen = ({ navigation }) => {
                         placeholderTextColor="white"
                         onChangeText={(value) => handleChangeText('password', value)}
                         style={styles.input}
+                        value={state.password}
                     />
                 </View>
                 <TouchableOpacity style={styles.button} onPress={loginUser}>

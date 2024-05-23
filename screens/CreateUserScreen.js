@@ -23,25 +23,21 @@ const CreateUserScreen = ({ navigation }) => {
             try {
                 const userCredential = await auth.createUserWithEmailAndPassword(state.email, state.password);
                 const user = userCredential.user;
-    
+
                 await db.collection('users').doc(state.curp).set({
+                    id: user.uid,
                     name: state.name,
                     email: state.email,
                     curp: state.curp,
-                    id: state.curp,
-                    createdAt: new Date(),
+                    createdAt: new Date().toISOString(),
                     plan: "plan1",
-                    role: "user" 
+                    role: "user"
                 });
-    
-                const curpDoc = await db.collection('users').add({
+
+                await db.collection('users').doc(user.uid).set({
                     curp: state.curp
                 });
 
-                await db.collection('users').doc(state.curp).update({
-                    id: curpDoc.id
-                });
-    
                 alert('Usuario registrado correctamente.');
                 navigation.navigate('LoginScreen');
             } catch (error) {
@@ -49,7 +45,8 @@ const CreateUserScreen = ({ navigation }) => {
                 alert('Error al registrar usuario: ' + error.message);
             }
         }
-    };    
+    };
+       
 
     return (
         <ScrollView style={styles.container}>

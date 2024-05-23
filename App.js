@@ -9,6 +9,8 @@ import LoginScreen from './screens/LoginScreen';
 import ConfigScreen from './screens/ConfigScreen';
 import ChangeEmailScreen from './screens/ChangeEmailScreen.js';
 import ChangePasswordScreen from './screens/ChangePasswordScreen.js';
+import CreateFilesScreen from './screens/CreateFilesScreen';
+import FileDetailsScreen from './screens/FileDetailsScreen.js';
 
 
 const Stack = createNativeStackNavigator()
@@ -20,6 +22,8 @@ function MyStack() {
       <Stack.Screen name='CreateUserScreens' component={CreateUserScreens} />
       <Stack.Screen name='UserDetailsScreen' component={UserDetailScreen} />
       <Stack.Screen name='ConfigScreen' component={ConfigScreen} />
+      <Stack.Screen name='FileDetailsScreen' component={FileDetailsScreen} />
+      <Stack.Screen name='CreateFilesScreen' component={CreateFilesScreen}/>
       <Stack.Screen name='ChangeEmailScreen' component={ChangeEmailScreen}/>
       <Stack.Screen name='ChangePasswordScreen' component={ChangePasswordScreen}/>
       <Stack.Screen name='UserList' component={UserList} />
