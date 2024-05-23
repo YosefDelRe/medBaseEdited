@@ -12,10 +12,10 @@ const ChangeEmailScreen = ({ navigation }) => {
             var user = auth.currentUser;
             var cred = EmailAuthProvider.credential(user.email, currentPassword);
             await user.reauthenticateWithCredential(cred);
-            console.log("Re-autenticacion exitosa");
+            //console.log("Re-autenticacion exitosa");
             return true;
         } catch (error) {
-            console.error("Error durante la re-autenticacion:", error);
+            //console.error("Error durante la re-autenticacion:", error);
             Alert.alert('Re-autenticacion fallada', error.message);
             return false;
         }
@@ -32,7 +32,7 @@ const ChangeEmailScreen = ({ navigation }) => {
     };
 
     const handleChangeEmail = async () => {
-        console.log("Intente actualizar el correo electrónico a:", email);
+        
         if (email === '' || confirmEmail === '' || password === '') {
             Alert.alert('Por favor, llene todos los campos');
             return;
@@ -44,11 +44,13 @@ const ChangeEmailScreen = ({ navigation }) => {
         }
 
         if (await reauthenticate(password)) {
+            alert('Se ha enviado un correo con la confirmación de cambio, por favor, revise su correo para verificar la nueva dirección');
             await sendVerificationEmail(email);
+            
             
             navigation.pop(2);
         } else {
-            console.log("Error de reautenticación, no se puede enviar el correo electrónico de verificación");
+            Alert.alert("Error de reautenticación, no se puede enviar el correo electrónico de verificación");
         }
     };
 

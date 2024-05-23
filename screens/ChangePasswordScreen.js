@@ -30,7 +30,8 @@ const ChangePasswordScreen = ({ navigation }) => {
             try {
                 await user.updatePassword(newPassword);
                 Alert.alert('Contraseña actualizada', 'Tu contraseña ha sido actualizada exitosamente.');
-                navigation.goBack();
+                alert('Tu contraseña ha sido actualizada exitosamente.');
+                navigation.pop(2);
             } catch (error) {
                 Alert.alert('Error', error.message);
             }

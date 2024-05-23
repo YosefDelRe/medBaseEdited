@@ -1,9 +1,20 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 const FileDetailsScreen = ({ route }) => {
     const { fileDetails } = route.params;
+
+    const handleOpenFile = () => {
+        if (fileDetails.fileUrl) {
+            Linking.openURL(fileDetails.fileUrl).catch(err => {
+                console.error("Failed to open URL", err);
+                alert("No se pudo abrir el archivo.");
+            });
+        } else {
+            alert("No hay archivo disponible.");
+        }
+    };
 
     return (
         <ScrollView style={styles.container}>
@@ -27,21 +38,6 @@ const FileDetailsScreen = ({ route }) => {
                 <Text style={styles.text}>{fileDetails.doctor}</Text>
             </View>
             <View style={styles.detailCard}>
-                <Ionicons name="document-text-outline" size={24} color="#5d7eeb" />
-                <Text style={styles.label}>Nombre del archivo:</Text>
-                <Text style={styles.text}>{fileDetails.fileName}</Text>
-            </View>
-            <View style={styles.detailCard}>
-                <Ionicons name="folder-open-outline" size={24} color="#5d7eeb" />
-                <Text style={styles.label}>Ruta del archivo:</Text>
-                <Text style={styles.text}>{fileDetails.filePath}</Text>
-            </View>
-            <View style={styles.detailCard}>
-                <Ionicons name="link-outline" size={24} color="#5d7eeb" />
-                <Text style={styles.label}>URL del archivo:</Text>
-                <Text style={styles.text}>{fileDetails.fileUrl}</Text>
-            </View>
-            <View style={styles.detailCard}>
                 <Ionicons name="clipboard-outline" size={24} color="#5d7eeb" />
                 <Text style={styles.label}>Observaciones:</Text>
                 <Text style={styles.text}>{fileDetails.observations}</Text>
@@ -51,6 +47,9 @@ const FileDetailsScreen = ({ route }) => {
                 <Text style={styles.label}>Tipo:</Text>
                 <Text style={styles.text}>{fileDetails.type}</Text>
             </View>
+            <TouchableOpacity style={styles.button} onPress={handleOpenFile}>
+                <Text style={styles.buttonText}>Consultar Archivo</Text>
+            </TouchableOpacity>
         </ScrollView>
     );
 };
@@ -100,6 +99,18 @@ const styles = StyleSheet.create({
         fontSize: 16,
         marginLeft: 10,
         color: '#333',
+    },
+    button: {
+        backgroundColor: '#5d7eeb',
+        padding: 15,
+        borderRadius: 10,
+        alignItems: 'center',
+        marginTop: 20,
+    },
+    buttonText: {
+        color: '#fff',
+        fontSize: 18,
+        fontWeight: 'bold',
     },
 });
 
