@@ -49,11 +49,13 @@ const CreateUserScreen = ({ navigation }) => {
        
 
     return (
-        <ScrollView style={styles.container}>
-            <LinearGradient
-                colors={['#5d7eeb', '#8491ff']}
-                style={styles.gradient}
-            >
+        <LinearGradient
+            colors={['#5d7eeb', '#8491ff']}
+            style={styles.container}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+        >
+            <ScrollView style={{ flex: 1 }}>
                 <View style={styles.logoContainer}>
                     <Image
                         source={require('../assets/images/icon2.png')}
@@ -63,99 +65,106 @@ const CreateUserScreen = ({ navigation }) => {
                 </View>
                 <View style={styles.inputGroup}>
                     <Feather name="user" size={24} color="white" style={styles.icon} />
-                    <TextInput 
+                    <TextInput
                         placeholder="Nombre"
                         placeholderTextColor="white"
                         onChangeText={(value) => handleChangeText('name', value)}
                         style={styles.input}
+                        value={state.name}
                     />
                 </View>
                 <View style={styles.inputGroup}>
                     <Feather name="mail" size={24} color="white" style={styles.icon} />
-                    <TextInput 
+                    <TextInput
                         placeholder="Email"
                         placeholderTextColor="white"
                         onChangeText={(value) => handleChangeText('email', value)}
                         style={styles.input}
+                        value={state.email}
                     />
                 </View>
                 <View style={styles.inputGroup}>
                     <Feather name="file-text" size={24} color="white" style={styles.icon} />
-                    <TextInput 
+                    <TextInput
                         placeholder="CURP"
                         placeholderTextColor="white"
                         onChangeText={(value) => handleChangeText('curp', value)}
                         style={styles.input}
+                        value={state.curp}
                     />
                 </View>
                 <View style={styles.inputGroup}>
                     <Feather name="lock" size={24} color="white" style={styles.icon} />
-                    <TextInput 
+                    <TextInput
                         placeholder="Contraseña"
                         secureTextEntry={true}
                         placeholderTextColor="white"
                         onChangeText={(value) => handleChangeText('password', value)}
                         style={styles.input}
+                        value={state.password}
                     />
                 </View>
                 <TouchableOpacity style={styles.button} onPress={saveNewUser}>
                     <Text style={styles.buttonText}>Registrar</Text>
                 </TouchableOpacity>
-            </LinearGradient>
-        </ScrollView>
+            </ScrollView>
+        </LinearGradient>
     );
 };
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        padding: 20
     },
     gradient: {
-        padding: 30,
+        flex: 1,
         justifyContent: 'center',
+        alignItems: 'center',
         minHeight: '100%',
+        padding: 30
     },
     logoContainer: {
         alignItems: 'center',
-        marginBottom: 30,
+        marginBottom: 30
     },
     logo: {
         width: 100,
-        height: 100, 
-        resizeMode: 'contain',
+        height: 100,
+        resizeMode: 'contain'
     },
     logoText: {
         color: 'white',
         fontSize: 24,
         fontWeight: 'bold',
-        marginTop: 10,
+        marginTop: 10
     },
     inputGroup: {
         flexDirection: 'row',
         marginBottom: 15,
         borderBottomWidth: 1,
         borderBottomColor: 'white',
-        alignItems: 'center',
+        alignItems: 'center'
     },
     icon: {
-        marginRight: 10,
+        marginRight: 10
     },
     input: {
         flex: 1,
         color: 'white',
         paddingBottom: 10,
-        fontSize: 16,
+        fontSize: 16
     },
     button: {
         backgroundColor: 'white',
         padding: 15,
         borderRadius: 5,
         alignItems: 'center',
-        marginTop: 20,
+        marginTop: 20
     },
     buttonText: {
         color: '#5d7eeb',
-        fontSize: 16,
+        fontSize: 16
     }
 });
 

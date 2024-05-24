@@ -44,11 +44,13 @@ const LoginScreen = ({ navigation }) => {
     );
 
     return (
-        <ScrollView style={styles.container}>
-            <LinearGradient
-                colors={['#5d7eeb', '#8491ff']}
-                style={styles.gradient}
-            >
+        <LinearGradient
+            colors={['#5d7eeb', '#8491ff']}
+            style={styles.container}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+        >
+            <ScrollView style={{ flex: 1 }}>
                 <View style={styles.logoContainer}>
                     <Image
                         source={require('../assets/images/icon2.png')}
@@ -58,7 +60,7 @@ const LoginScreen = ({ navigation }) => {
                 </View>
                 <View style={styles.inputGroup}>
                     <Feather name="mail" size={24} color="white" style={styles.icon} />
-                    <TextInput 
+                    <TextInput
                         placeholder="Email"
                         placeholderTextColor="white"
                         onChangeText={(value) => handleChangeText('email', value)}
@@ -68,7 +70,7 @@ const LoginScreen = ({ navigation }) => {
                 </View>
                 <View style={styles.inputGroup}>
                     <Feather name="lock" size={24} color="white" style={styles.icon} />
-                    <TextInput 
+                    <TextInput
                         placeholder="Contraseña"
                         secureTextEntry={true}
                         placeholderTextColor="white"
@@ -86,19 +88,22 @@ const LoginScreen = ({ navigation }) => {
                         <Text style={styles.linkText}>Regístrate.</Text>
                     </TouchableOpacity>
                 </View>
-            </LinearGradient>
-        </ScrollView>
+            </ScrollView>
+        </LinearGradient>
     );
 };
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        padding: 20
     },
     gradient: {
-        padding: 30,
+        flex: 1,
         justifyContent: 'center',
+        alignItems: 'center',
         minHeight: '100%',
+        padding: 30
     },
     logoContainer: {
         alignItems: 'center',
