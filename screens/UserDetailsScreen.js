@@ -22,52 +22,66 @@ const UserDetailsScreen = ({ route, navigation }) => {
                 console.log('No such document!');
             }
         });
-
-        const fetchFiles = async () => {
-            setLoading(true);
-            const filesRef = db.collection('files').where('userId', '==', uid).orderBy('date', 'desc').limit(4);
-        
-            try {
-                const snapshot = await filesRef.get();
-                if (snapshot.empty) {
-                    console.log("No matching documents.");
-                    setLoading(false);
-                    return;
-                }
-                const filesArray = snapshot.docs.map(doc => doc.data());
-                console.log("Files loaded:", filesArray); // Loguear los datos cargados
-                setFiles(filesArray);
-                setLastVisible(snapshot.docs[snapshot.docs.length - 1]);
-            } catch (error) {
-                console.error("Error fetching files:", error);
-            }
-            setLoading(false);
-        };
-
-        fetchFiles();
-
+    
+        fetchInitialFiles();
+    
         return () => {
             unsubscribeUser();
         };
     }, [userId, uid]);
+
+    const fetchInitialFiles = async () => {
+        setLoading(true);
+        const filesRef = db.collection('files')
+                            .where('userId', '==', uid)
+                            .orderBy('date', 'desc')
+                            .limit(4);
+    
+        try {
+            const snapshot = await filesRef.get();
+            if (snapshot.empty) {
+                console.log("No matching documents.");
+            } else {
+                const filesArray = snapshot.docs.map(doc => ({
+                    id: doc.id, // Asegúrate de incluir esta línea para guardar el ID del documento
+                    clinic: doc.data().clinic,
+                    doctor: doc.data().doctor,
+                    observations: doc.data().observations
+                }));
+                setFiles(filesArray);
+                setLastVisible(snapshot.docs[snapshot.docs.length - 1]);
+            }
+        } catch (error) {
+            console.error("Error fetching initial files:", error);
+        }
+        setLoading(false);
+    };
 
     const fetchMoreFiles = async () => {
         if (lastVisible && !loading) {
             setLoading(true);
             const filesRef = db.collection('files').where('userId', '==', uid)
                 .orderBy('date', 'desc').startAfter(lastVisible).limit(4);
-    
+        
             try {
                 const snapshot = await filesRef.get();
-                const newFiles = snapshot.docs.map(doc => doc.data());
-                setFiles(prevFiles => [...prevFiles, ...newFiles]);
-                setLastVisible(snapshot.docs[snapshot.docs.length - 1]);
+                if (!snapshot.empty) {
+                    const newFiles = snapshot.docs.map(doc => ({
+                        id: doc.id,  // Asegúrate de incluir el ID del documento
+                        clinic: doc.data().clinic,
+                        doctor: doc.data().doctor,
+                        observations: doc.data().observations
+                    }));
+                    setFiles(prevFiles => [...prevFiles, ...newFiles]);
+                    setLastVisible(snapshot.docs[snapshot.docs.length - 1]);
+                }
             } catch (error) {
                 console.error("Error fetching more files:", error);
             }
             setLoading(false);
         }
     };
+    
 
     const handleLogout = async () => {
         try {
@@ -118,7 +132,7 @@ const UserDetailsScreen = ({ route, navigation }) => {
                     <Button
                         title="Ver Detalles"
                         color="#5d7eeb"
-                        onPress={() => navigation.navigate('FileDetailsScreen', { fileDetails: file })}
+                        onPress={() => navigation.navigate('FileDetailsScreen', { fileId: file.id })}
                     />
                 </View>
             ))}

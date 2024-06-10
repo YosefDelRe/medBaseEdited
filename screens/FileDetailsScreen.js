@@ -1,20 +1,33 @@
-import React from 'react';
+import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { db } from "../database/firebase";
 
 const FileDetailsScreen = ({ route }) => {
-    const { fileDetails } = route.params;
+    const { fileId } = route.params;
+    const [fileDetails, setFileDetails] = useState(null);
 
-    const handleOpenFile = () => {
-        if (fileDetails.fileUrl) {
-            Linking.openURL(fileDetails.fileUrl).catch(err => {
-                console.error("Failed to open URL", err);
-                alert("No se pudo abrir el archivo.");
-            });
-        } else {
-            alert("No hay archivo disponible.");
-        }
-    };
+    useEffect(() => {
+        const fetchFileDetails = async () => {
+            const docRef = db.collection('files').doc(fileId);
+            try {
+                const doc = await docRef.get();
+                if (doc.exists) {
+                    setFileDetails(doc.data());
+                } else {
+                    console.log('No such document!');
+                }
+            } catch (error) {
+                console.error("Error fetching file details:", error);
+            }
+        };
+
+        fetchFileDetails();
+    }, [fileId]);
+
+    if (!fileDetails) {
+        return <Text>Cargando detalles del archivo...</Text>; // Muestra un mensaje de carga mientras los datos no estén disponibles.
+    }
 
     return (
         <ScrollView style={styles.container}>
@@ -47,12 +60,22 @@ const FileDetailsScreen = ({ route }) => {
                 <Text style={styles.label}>Tipo:</Text>
                 <Text style={styles.text}>{fileDetails.type}</Text>
             </View>
-            <TouchableOpacity style={styles.button} onPress={handleOpenFile}>
+            <TouchableOpacity style={styles.button} onPress={() => {
+                if (fileDetails.fileUrl) {
+                    Linking.openURL(fileDetails.fileUrl).catch(err => {
+                        console.error("Failed to open URL", err);
+                        alert("No se pudo abrir el archivo.");
+                    });
+                } else {
+                    alert("No hay archivo disponible.");
+                }
+            }}>
                 <Text style={styles.buttonText}>Consultar Archivo</Text>
             </TouchableOpacity>
         </ScrollView>
     );
 };
+
 
 const styles = StyleSheet.create({
     container: {
