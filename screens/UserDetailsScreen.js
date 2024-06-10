@@ -11,32 +11,63 @@ const UserDetailsScreen = ({ route, navigation }) => {
         email: '',
         curp: ''
     });
+    const [lastVisible, setLastVisible] = useState(null);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        const userRef = db.collection('users').doc(userId);
-        const filesRef = db.collection('files').where('userId', '==', uid);
-    
-        const unsubscribeUser = userRef.onSnapshot(doc => {
+        const unsubscribeUser = db.collection('users').doc(userId).onSnapshot(doc => {
             if (doc.exists) {
                 setUserDetails(doc.data());
             } else {
                 console.log('No such document!');
             }
         });
-    
-        const unsubscribeFiles = filesRef.onSnapshot(snapshot => {
-            const filesArray = [];
-            snapshot.forEach(doc => {
-                filesArray.push(doc.data());
-            });
-            setFiles(filesArray);
-        });
-    
+
+        const fetchFiles = async () => {
+            setLoading(true);
+            const filesRef = db.collection('files').where('userId', '==', uid).orderBy('date', 'desc').limit(4);
+        
+            try {
+                const snapshot = await filesRef.get();
+                if (snapshot.empty) {
+                    console.log("No matching documents.");
+                    setLoading(false);
+                    return;
+                }
+                const filesArray = snapshot.docs.map(doc => doc.data());
+                console.log("Files loaded:", filesArray); // Loguear los datos cargados
+                setFiles(filesArray);
+                setLastVisible(snapshot.docs[snapshot.docs.length - 1]);
+            } catch (error) {
+                console.error("Error fetching files:", error);
+            }
+            setLoading(false);
+        };
+
+        fetchFiles();
+
         return () => {
             unsubscribeUser();
-            unsubscribeFiles();
         };
     }, [userId, uid]);
+
+    const fetchMoreFiles = async () => {
+        if (lastVisible && !loading) {
+            setLoading(true);
+            const filesRef = db.collection('files').where('userId', '==', uid)
+                .orderBy('date', 'desc').startAfter(lastVisible).limit(4);
+    
+            try {
+                const snapshot = await filesRef.get();
+                const newFiles = snapshot.docs.map(doc => doc.data());
+                setFiles(prevFiles => [...prevFiles, ...newFiles]);
+                setLastVisible(snapshot.docs[snapshot.docs.length - 1]);
+            } catch (error) {
+                console.error("Error fetching more files:", error);
+            }
+            setLoading(false);
+        }
+    };
 
     const handleLogout = async () => {
         try {
@@ -91,6 +122,14 @@ const UserDetailsScreen = ({ route, navigation }) => {
                     />
                 </View>
             ))}
+            {lastVisible && (
+                <Button
+                    title="Cargar más"
+                    onPress={fetchMoreFiles}
+                    color="#5d7eeb"
+                />
+            )}
+            {loading && <Text>Cargando...</Text>}
         </ScrollView>
     );
 };
