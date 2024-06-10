@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, ScrollView, StyleSheet, TouchableOpacity, Image } from "react-native";
+import { View, Text, TextInput, ScrollView, StyleSheet, TouchableOpacity, Image, Modal, Button } from "react-native";
 import { LinearGradient } from 'expo-linear-gradient';
 import { Feather } from '@expo/vector-icons';
 import { db, auth } from "../database/firebase";
@@ -12,13 +12,17 @@ const CreateUserScreen = ({ navigation }) => {
         password: ''
     });
 
+    const [modalVisible, setModalVisible] = useState(false);
+    const [modalMessage, setModalMessage] = useState('');
+
     const handleChangeText = (name, value) => {
         setState({ ...state, [name]: value });
     };
 
     const saveNewUser = async () => {
         if (state.name === '' || state.email === '' || state.curp === '' || state.password === '') {
-            alert('Por favor, completa todos los campos.');
+            setModalMessage('Por favor, completa todos los campos.');
+            setModalVisible(true);
         } else {
             try {
                 const userCredential = await auth.createUserWithEmailAndPassword(state.email, state.password);
@@ -38,15 +42,18 @@ const CreateUserScreen = ({ navigation }) => {
                     curp: state.curp
                 });
 
-                alert('Usuario registrado correctamente.');
-                navigation.navigate('LoginScreen');
+                setModalMessage('Usuario registrado correctamente.');
+                setModalVisible(true);
+                setTimeout(() => {
+                    navigation.navigate('LoginScreen');
+                }, 2000);
             } catch (error) {
                 console.error("Error al registrar el usuario:", error);
-                alert('Error al registrar usuario: ' + error.message);
+                setModalMessage('Error al registrar usuario: ' + error.message);
+                setModalVisible(true);
             }
         }
     };
-       
 
     return (
         <LinearGradient
@@ -108,6 +115,24 @@ const CreateUserScreen = ({ navigation }) => {
                     <Text style={styles.buttonText}>Registrar</Text>
                 </TouchableOpacity>
             </ScrollView>
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={modalVisible}
+                onRequestClose={() => {
+                    setModalVisible(!modalVisible);
+                }}
+            >
+                <View style={styles.centeredView}>
+                    <View style={styles.modalView}>
+                        <Text style={styles.modalText}>{modalMessage}</Text>
+                        <Button
+                            title="Cerrar"
+                            onPress={() => setModalVisible(!modalVisible)}
+                        />
+                    </View>
+                </View>
+            </Modal>
         </LinearGradient>
     );
 };
@@ -165,6 +190,31 @@ const styles = StyleSheet.create({
     buttonText: {
         color: '#5d7eeb',
         fontSize: 16
+    },
+    centeredView: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        marginTop: 22
+    },
+    modalView: {
+        margin: 20,
+        backgroundColor: "white",
+        borderRadius: 20,
+        padding: 35,
+        alignItems: "center",
+        shadowColor: "#000",
+        shadowOffset: {
+        width: 0,
+        height: 2
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5
+    },
+    modalText: {
+        marginBottom: 15,
+        textAlign: "center"
     }
 });
 

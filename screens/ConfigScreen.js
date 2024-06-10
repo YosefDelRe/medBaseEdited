@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Modal, Button } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { db } from "../database/firebase";
 import { Ionicons } from '@expo/vector-icons';
 
 const ConfigScreen = ({ route, navigation }) => {
     const { userId } = route.params;
-
     const [userDetails, setUserDetails] = useState({
         name: '',
         curp: ''
     });
     const [loading, setLoading] = useState(true);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [modalMessage, setModalMessage] = useState('');
 
     useEffect(() => {
         const fetchData = async () => {
@@ -47,14 +48,19 @@ const ConfigScreen = ({ route, navigation }) => {
                     name: userDetails.name,
                     curp: userDetails.curp
                 });
-                alert('Datos actualizados correctamente');
-                navigation.goBack();
+                setModalMessage('Datos actualizados correctamente');
+                setModalVisible(true);
+                setTimeout(() => {
+                    navigation.goBack();
+                }, 2000);
             } else {
-                alert('No se encontró el documento del usuario para actualizar.');
+                setModalMessage('No se encontró el documento del usuario para actualizar.');
+                setModalVisible(true);
             }
         } catch (error) {
             console.error("Error updating user data: ", error);
-            alert('Error al actualizar los datos.');
+            setModalMessage('Error al actualizar los datos.');
+            setModalVisible(true);
         }
     };
 
@@ -95,6 +101,24 @@ const ConfigScreen = ({ route, navigation }) => {
                 <Ionicons name="save-outline" size={20} color="white" style={{ marginRight: 10 }} />
                 <Text style={styles.buttonText}>Guardar Cambios</Text>
             </TouchableOpacity>
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={modalVisible}
+                onRequestClose={() => {
+                    setModalVisible(!modalVisible);
+                }}
+            >
+                <View style={styles.centeredView}>
+                    <View style={styles.modalView}>
+                        <Text style={styles.modalText}>{modalMessage}</Text>
+                        <Button
+                            title="Cerrar"
+                            onPress={() => setModalVisible(!modalVisible)}
+                        />
+                    </View>
+                </View>
+            </Modal>
         </LinearGradient>
     );
 };
@@ -141,6 +165,31 @@ const styles = StyleSheet.create({
         borderRadius: 25,
         backgroundColor: '#486CE1',
         marginBottom: 10
+    },
+    centeredView: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        marginTop: 22
+    },
+    modalView: {
+        margin: 20,
+        backgroundColor: "white",
+        borderRadius: 20,
+        padding: 35,
+        alignItems: "center",
+        shadowColor: "#000",
+        shadowOffset: {
+        width: 0,
+        height: 2
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5
+    },
+    modalText: {
+        marginBottom: 15,
+        textAlign: "center"
     }
 });
 

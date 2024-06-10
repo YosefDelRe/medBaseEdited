@@ -1,22 +1,23 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-native";
-import { auth, EmailAuthProvider } from "../database/firebase"; 
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Modal, Button } from "react-native";
+import { auth, EmailAuthProvider } from "../database/firebase";
 
 const ChangeEmailScreen = ({ navigation }) => {
     const [email, setEmail] = useState('');
     const [confirmEmail, setConfirmEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [modalVisible, setModalVisible] = useState(false);
+    const [modalMessage, setModalMessage] = useState('');
 
     const reauthenticate = async (currentPassword) => {
         try {
             var user = auth.currentUser;
             var cred = EmailAuthProvider.credential(user.email, currentPassword);
             await user.reauthenticateWithCredential(cred);
-            //console.log("Re-autenticacion exitosa");
             return true;
         } catch (error) {
-            //console.error("Error durante la re-autenticacion:", error);
-            Alert.alert('Re-autenticacion fallada', error.message);
+            setModalMessage('Re-autenticación fallada: ' + error.message);
+            setModalVisible(true);
             return false;
         }
     };
@@ -24,33 +25,35 @@ const ChangeEmailScreen = ({ navigation }) => {
     const sendVerificationEmail = async (newEmail) => {
         try {
             await auth.currentUser.verifyBeforeUpdateEmail(newEmail);
-            Alert.alert('Verification Email Sent', 'Por favor revise su correo electrónico para verificar la nueva dirección antes de actualizar.');
+            setModalMessage('Correo de verificación enviado. Por favor revise su correo electrónico para verificar la nueva dirección antes de actualizar.');
+            setModalVisible(true);
         } catch (error) {
-            console.error("Error enviado el correo de verificación:", error);
-            Alert.alert('Correo electrónico de verificación fallido', error.message);
+            setModalMessage('Correo electrónico de verificación fallido: ' + error.message);
+            setModalVisible(true);
         }
     };
 
     const handleChangeEmail = async () => {
-        
         if (email === '' || confirmEmail === '' || password === '') {
-            Alert.alert('Por favor, llene todos los campos');
+            setModalMessage('Por favor, llene todos los campos');
+            setModalVisible(true);
             return;
         }
 
         if (email !== confirmEmail) {
-            Alert.alert('Error', 'Los correos electrónicos no coinciden. Inténtalo de nuevo.');
+            setModalMessage('Los correos electrónicos no coinciden. Inténtalo de nuevo.');
+            setModalVisible(true);
             return;
         }
 
         if (await reauthenticate(password)) {
-            alert('Se ha enviado un correo con la confirmación de cambio, por favor, revise su correo para verificar la nueva dirección');
+            setModalMessage('Se ha enviado un correo con la confirmación de cambio, por favor, revise su correo para verificar la nueva dirección.');
+            setModalVisible(true);
             await sendVerificationEmail(email);
-            
-            
             navigation.pop(2);
         } else {
-            Alert.alert("Error de reautenticación, no se puede enviar el correo electrónico de verificación");
+            setModalMessage('Error de reautenticación, no se puede enviar el correo electrónico de verificación');
+            setModalVisible(true);
         }
     };
 
@@ -79,6 +82,24 @@ const ChangeEmailScreen = ({ navigation }) => {
             <TouchableOpacity style={styles.button} onPress={handleChangeEmail}>
                 <Text style={styles.buttonText}>Guardar Email</Text>
             </TouchableOpacity>
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={modalVisible}
+                onRequestClose={() => {
+                    setModalVisible(!modalVisible);
+                }}
+            >
+                <View style={styles.centeredView}>
+                    <View style={styles.modalView}>
+                        <Text style={styles.modalText}>{modalMessage}</Text>
+                        <Button
+                            title="Cerrar"
+                            onPress={() => setModalVisible(!modalVisible)}
+                        />
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 };
@@ -116,6 +137,31 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: '500',
     },
+    centeredView: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        marginTop: 22
+    },
+    modalView: {
+        margin: 20,
+        backgroundColor: "white",
+        borderRadius: 20,
+        padding: 35,
+        alignItems: "center",
+        shadowColor: "#000",
+        shadowOffset: {
+        width: 0,
+        height: 2
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5
+    },
+    modalText: {
+        marginBottom: 15,
+        textAlign: "center"
+    }
 });
 
 export default ChangeEmailScreen;

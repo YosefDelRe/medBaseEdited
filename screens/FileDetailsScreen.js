@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Button } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { db } from "../database/firebase";
 
 const FileDetailsScreen = ({ route }) => {
     const { fileId } = route.params;
     const [fileDetails, setFileDetails] = useState(null);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [modalMessage, setModalMessage] = useState('');
 
     useEffect(() => {
         const fetchFileDetails = async () => {
@@ -15,7 +17,7 @@ const FileDetailsScreen = ({ route }) => {
                 if (doc.exists) {
                     setFileDetails(doc.data());
                 } else {
-                    console.log('No such document!');
+                    console.error('No such document!');
                 }
             } catch (error) {
                 console.error("Error fetching file details:", error);
@@ -26,8 +28,21 @@ const FileDetailsScreen = ({ route }) => {
     }, [fileId]);
 
     if (!fileDetails) {
-        return <Text>Cargando detalles del archivo...</Text>; // Muestra un mensaje de carga mientras los datos no estén disponibles.
+        return <Text>Cargando detalles del archivo...</Text>;
     }
+
+    const handleFileOpen = () => {
+        if (fileDetails.fileUrl) {
+            Linking.openURL(fileDetails.fileUrl).catch(err => {
+                console.error("Failed to open URL", err);
+                setModalMessage("No se pudo abrir el archivo.");
+                setModalVisible(true);
+            });
+        } else {
+            setModalMessage("No hay archivo disponible.");
+            setModalVisible(true);
+        }
+    };
 
     return (
         <ScrollView style={styles.container}>
@@ -60,22 +75,30 @@ const FileDetailsScreen = ({ route }) => {
                 <Text style={styles.label}>Tipo:</Text>
                 <Text style={styles.text}>{fileDetails.type}</Text>
             </View>
-            <TouchableOpacity style={styles.button} onPress={() => {
-                if (fileDetails.fileUrl) {
-                    Linking.openURL(fileDetails.fileUrl).catch(err => {
-                        console.error("Failed to open URL", err);
-                        alert("No se pudo abrir el archivo.");
-                    });
-                } else {
-                    alert("No hay archivo disponible.");
-                }
-            }}>
+            <TouchableOpacity style={styles.button} onPress={handleFileOpen}>
                 <Text style={styles.buttonText}>Consultar Archivo</Text>
             </TouchableOpacity>
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={modalVisible}
+                onRequestClose={() => {
+                    setModalVisible(!modalVisible);
+                }}
+            >
+                <View style={styles.centeredView}>
+                    <View style={styles.modalView}>
+                        <Text style={styles.modalText}>{modalMessage}</Text>
+                        <Button
+                            title="Cerrar"
+                            onPress={() => setModalVisible(!modalVisible)}
+                        />
+                    </View>
+                </View>
+            </Modal>
         </ScrollView>
     );
 };
-
 
 const styles = StyleSheet.create({
     container: {
@@ -135,6 +158,31 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: 'bold',
     },
+    centeredView: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        marginTop: 22
+    },
+    modalView: {
+        margin: 20,
+        backgroundColor: "white",
+        borderRadius: 20,
+        padding: 35,
+        alignItems: "center",
+        shadowColor: "#000",
+        shadowOffset: {
+        width: 0,
+        height: 2
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5
+    },
+    modalText: {
+        marginBottom: 15,
+        textAlign: "center"
+    }
 });
 
 export default FileDetailsScreen;

@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { View, TextInput, TouchableOpacity, Text, StyleSheet, Alert } from 'react-native';
+import { View, TextInput, TouchableOpacity, Text, StyleSheet, Modal, Button } from 'react-native';
 import { auth, EmailAuthProvider } from "../database/firebase";
 
 const ChangePasswordScreen = ({ navigation }) => {
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [modalVisible, setModalVisible] = useState(false);
+    const [modalMessage, setModalMessage] = useState('');
 
     const reauthenticate = async (currentPassword) => {
         const user = auth.currentUser;
@@ -14,14 +16,16 @@ const ChangePasswordScreen = ({ navigation }) => {
             await user.reauthenticateWithCredential(credential);
             return true;
         } catch (error) {
-            Alert.alert('Error', 'La contraseña actual es incorrecta.');
+            setModalMessage('La contraseña actual es incorrecta.');
+            setModalVisible(true);
             return false;
         }
     };    
 
     const handleSavePassword = async () => {
         if (newPassword !== confirmPassword) {
-            Alert.alert('Error', 'Las contraseñas nuevas no coinciden.');
+            setModalMessage('Las contraseñas nuevas no coinciden.');
+            setModalVisible(true);
             return;
         }
         const reauthenticated = await reauthenticate(currentPassword);
@@ -29,11 +33,14 @@ const ChangePasswordScreen = ({ navigation }) => {
             const user = auth.currentUser;
             try {
                 await user.updatePassword(newPassword);
-                Alert.alert('Contraseña actualizada', 'Tu contraseña ha sido actualizada exitosamente.');
-                alert('Tu contraseña ha sido actualizada exitosamente.');
-                navigation.pop(2);
+                setModalMessage('Tu contraseña ha sido actualizada exitosamente.');
+                setModalVisible(true);
+                setTimeout(() => {
+                    navigation.pop(2);
+                }, 2000);
             } catch (error) {
-                Alert.alert('Error', error.message);
+                setModalMessage(error.message);
+                setModalVisible(true);
             }
         }
     };
@@ -65,6 +72,24 @@ const ChangePasswordScreen = ({ navigation }) => {
             <TouchableOpacity style={styles.button} onPress={handleSavePassword}>
                 <Text style={styles.buttonText}>Guardar nueva contraseña</Text>
             </TouchableOpacity>
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={modalVisible}
+                onRequestClose={() => {
+                    setModalVisible(!modalVisible);
+                }}
+            >
+                <View style={styles.centeredView}>
+                    <View style={styles.modalView}>
+                        <Text style={styles.modalText}>{modalMessage}</Text>
+                        <Button
+                            title="Cerrar"
+                            onPress={() => setModalVisible(!modalVisible)}
+                        />
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 };
@@ -104,6 +129,31 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: '500',
     },
+    centeredView: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        marginTop: 22
+    },
+    modalView: {
+        margin: 20,
+        backgroundColor: "white",
+        borderRadius: 20,
+        padding: 35,
+        alignItems: "center",
+        shadowColor: "#000",
+        shadowOffset: {
+        width: 0,
+        height: 2
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5
+    },
+    modalText: {
+        marginBottom: 15,
+        textAlign: "center"
+    }
 });
 
 export default ChangePasswordScreen;

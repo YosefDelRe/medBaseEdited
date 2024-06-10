@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, ScrollView, StyleSheet, TouchableOpacity, Image } from "react-native";
+import { View, Text, TextInput, ScrollView, StyleSheet, TouchableOpacity, Image, Modal, Button } from "react-native";
 import { LinearGradient } from 'expo-linear-gradient';
 import { Feather } from '@expo/vector-icons';
 import { db, auth } from "../database/firebase";
@@ -11,13 +11,17 @@ const LoginScreen = ({ navigation }) => {
         password: ''
     });
 
+    const [modalVisible, setModalVisible] = useState(false);
+    const [modalMessage, setModalMessage] = useState('');
+
     const handleChangeText = (name, value) => {
         setState({ ...state, [name]: value });
     };
 
     const loginUser = async () => {
         if (state.email === '' || state.password === '') {
-            alert('Ingresa todos los datos');
+            setModalMessage('Ingresa todos los datos');
+            setModalVisible(true);
         } else {
             try {
                 const userCredential = await auth.signInWithEmailAndPassword(state.email, state.password);
@@ -26,13 +30,18 @@ const LoginScreen = ({ navigation }) => {
                 const userDoc = await db.collection('users').where('id', '==', user.uid).get();
                 if (!userDoc.empty) {
                     const userData = userDoc.docs[0].data();
-                    alert('Usuario autenticado');
-                    navigation.navigate('UserDetailsScreen', { userId: userData.curp, uid: user.uid });
+                    setModalMessage('Usuario autenticado');
+                    setModalVisible(true);
+                    setTimeout(() => {
+                        navigation.navigate('UserDetailsScreen', { userId: userData.curp, uid: user.uid });
+                    }, 2000);
                 } else {
-                    alert('No se encontró el documento del usuario.');
+                    setModalMessage('No se encontró el documento del usuario.');
+                    setModalVisible(true);
                 }
             } catch (error) {
-                alert('Información Incorrecta');
+                setModalMessage('Información Incorrecta');
+                setModalVisible(true);
             }
         }
     };
@@ -89,6 +98,24 @@ const LoginScreen = ({ navigation }) => {
                     </TouchableOpacity>
                 </View>
             </ScrollView>
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={modalVisible}
+                onRequestClose={() => {
+                    setModalVisible(!modalVisible);
+                }}
+            >
+                <View style={styles.centeredView}>
+                    <View style={styles.modalView}>
+                        <Text style={styles.modalText}>{modalMessage}</Text>
+                        <Button
+                            title="Cerrar"
+                            onPress={() => setModalVisible(!modalVisible)}
+                        />
+                    </View>
+                </View>
+            </Modal>
         </LinearGradient>
     );
 };
@@ -158,6 +185,31 @@ const styles = StyleSheet.create({
     linkText: {
         color: 'white',
         fontWeight: 'bold',
+    },
+    centeredView: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        marginTop: 22
+    },
+    modalView: {
+        margin: 20,
+        backgroundColor: "white",
+        borderRadius: 20,
+        padding: 35,
+        alignItems: "center",
+        shadowColor: "#000",
+        shadowOffset: {
+        width: 0,
+        height: 2
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5
+    },
+    modalText: {
+        marginBottom: 15,
+        textAlign: "center"
     }
 });
 

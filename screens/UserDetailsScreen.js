@@ -43,7 +43,7 @@ const UserDetailsScreen = ({ route, navigation }) => {
                 console.log("No matching documents.");
             } else {
                 const filesArray = snapshot.docs.map(doc => ({
-                    id: doc.id, // Asegúrate de incluir esta línea para guardar el ID del documento
+                    id: doc.id, 
                     clinic: doc.data().clinic,
                     doctor: doc.data().doctor,
                     observations: doc.data().observations
@@ -67,7 +67,7 @@ const UserDetailsScreen = ({ route, navigation }) => {
                 const snapshot = await filesRef.get();
                 if (!snapshot.empty) {
                     const newFiles = snapshot.docs.map(doc => ({
-                        id: doc.id,  // Asegúrate de incluir el ID del documento
+                        id: doc.id,
                         clinic: doc.data().clinic,
                         doctor: doc.data().doctor,
                         observations: doc.data().observations
