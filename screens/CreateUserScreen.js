@@ -19,9 +19,26 @@ const CreateUserScreen = ({ navigation }) => {
         setState({ ...state, [name]: value });
     };
 
+    const validateEmail = (email) => {
+        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return regex.test(email);
+    };
+
+    const validateCurp = (curp) => {
+        const regex = /^[A-Z]{4}\d{6}[HM][A-Z]{5}[A-Z0-9]{2}$/;
+        console.log("CURP validation:", regex.test(curp)); // Añadir mensaje de consola
+        return regex.test(curp);
+    };
+
     const saveNewUser = async () => {
         if (state.name === '' || state.email === '' || state.curp === '' || state.password === '') {
             setModalMessage('Por favor, completa todos los campos.');
+            setModalVisible(true);
+        } else if (!validateEmail(state.email)) {
+            setModalMessage('Correo inválido. Por favor, ingresa un correo válido.');
+            setModalVisible(true);
+        } else if (!validateCurp(state.curp)) {
+            setModalMessage('CURP inválida. Por favor, ingresa una CURP válida.');
             setModalVisible(true);
         } else {
             try {
